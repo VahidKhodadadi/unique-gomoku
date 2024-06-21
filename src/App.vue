@@ -1,10 +1,7 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+import Gomoku from './components/Gomoku.vue';
 </script>
 
 <template>
-  <HelloWorld msg="Vite + Vue" />
+  <Gomoku />
 </template>
-
-<style scoped>
-</style>
