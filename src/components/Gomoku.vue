@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 
-type Color = 'BLACK' | 'WHITE';
+type Color = 'black' | 'white';
 
 const cols = 15;
 const initialSquares = Array(cols).fill(null).map(() => Array(cols).fill(null).map(() => null));
+const history = reactive<{ i: number, j: number }[]>([]);
 const squares = reactive<(Color | null)[][]>(initialSquares);
 const winner = ref<Color | null>(null);
-const currentTurn = ref<Color>('WHITE');
+const currentTurn = ref<Color>('white');
 
 const isWinner = (tempI: number, tempJ: number) => {
     let count = 0;
@@ -81,52 +82,114 @@ const isWinner = (tempI: number, tempJ: number) => {
     return null;
 }
 
-const selectSquare = (i: number, j: number) => {
+const changeTurn = () => {
+    currentTurn.value = currentTurn.value === 'black' ? 'white' : 'black';
+}
+
+const selectSquare = (i: number, j: number, val: Color | null) => {
     if (winner.value) return;
-    squares[i][j] = currentTurn.value;
-    const winnerColor = isWinner(i, j);
-    if (winnerColor) {
-        winner.value = winnerColor;
+    squares[i][j] = val;
+    if (val === null) {
+        changeTurn();
     }
     else {
-        currentTurn.value = currentTurn.value === 'BLACK' ? 'WHITE' : 'BLACK';
+        const winnerColor = isWinner(i, j);
+        if (winnerColor) {
+            winner.value = winnerColor;
+        }
+        else {
+            history.push({ i, j });
+            changeTurn();
+        }
     }
 }
 
 const restart = () => {
+    // clear all squares
     squares.forEach((row, i) => {
         row.forEach((_, j) => {
             squares[i][j] = null;
         })
     });
-    currentTurn.value = 'WHITE';
+    // reset current turn to white
+    currentTurn.value = 'white';
+    // clear history
+    history.forEach(() => {
+        history.pop();
+    })
+    // no winner
     winner.value = null;
+}
+const undo = () => {
+    if (history.length === 0) return;
+    const { i, j } = history[history.length - 1];
+    history.pop();
+    selectSquare(i, j, null);
 }
 </script>   
 
 <template>
-    <button title="New game" @click="restart">New game</button>
-    <p v-if="Boolean(winner)" class="victory-title"
-        :class="[Boolean(winner) ? winner === 'BLACK' ? 'black' : 'white' : '']">
+    <div class="buttons">
+        <button class="back" :disabled="history.length === 0" @click="undo">
+            Back
+        </button>
+        <button class="new-game" title="New game" @click="restart">
+            New game
+        </button>
+    </div>
+
+    <p v-if="Boolean(winner)" class="winner-title" :class="[Boolean(winner) ? winner : '']">
         {{ winner }} won!
     </p>
-    <p v-else>Turn: {{ currentTurn }}</p>
 
-    <table :class="Boolean(winner) ? 'game-over' : ''">
-        <tbody>
-            <tr v-for="(row, i) in squares">
-                <td v-for="(square, j) in row">
-                    <div v-if="Boolean(square)" class="circle"
-                        :class="[square === 'BLACK' ? 'black' : square === 'WHITE' ? 'white' : '']"></div>
-                    <div @click="() => selectSquare(i, j)" v-else class="empty"></div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+    <p v-else class="current-turn">
+        Turn: {{ currentTurn }}
+    </p>
+
+    <main class="container">
+        <table :class="Boolean(winner) ? 'game-over' : ''">
+            <tbody>
+                <tr v-for="(row, i) in squares">
+                    <td v-for="(square, j) in row">
+                        <div v-if="Boolean(square)" class="circle" :style="{ backgroundColor: square || 'transparent' }">
+                        </div>
+                        <div @click="() => selectSquare(i, j, currentTurn)" v-else class="empty"></div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
 </template>
 
 <style scoped lang="scss">
-.victory-title {
+.buttons {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 24px;
+
+    button {
+        padding: 8px 12px;
+        transition: transform 0.2s ease;
+        box-sizing: border-box;
+
+        &:active {
+            transform: scale(0.97);
+        }
+
+        &.new-game {
+            margin-inline-start: 24px;
+        }
+    }
+}
+
+.current-turn {
+    width: 100%;
+    text-align: center;
+}
+
+.winner-title {
     font-size: 16px;
     text-align: center;
     color: black;
@@ -137,55 +200,51 @@ const restart = () => {
     }
 }
 
-table {
-    position: relative;
-    border: 1px solid black;
-    border-collapse: collapse;
-    table-layout: fixed;
-    background-color: rgb(255 150 19 / 77%);
+.container {
+    max-width: 100vw;
+    overflow: auto;
+    background-color: rgba(165, 91, 1, 0.77);
+    padding: 12px;
 
-    &.game-over::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 2;
-        background-color: #cbcbcb8f;
-    }
-
-    td {
+    table {
+        position: relative;
         border: 1px solid black;
         border-collapse: collapse;
-        width: 30px;
-        height: 30px;
-        min-width: 30px;
-        box-sizing: border-box;
+        table-layout: fixed;
+        background-color: rgb(255 150 19 / 77%);
 
-        .circle {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            box-sizing: border-box;
-            border: 4px solid #aaaaaa;
-
-            &.white {
-                background-color: white;
-            }
-
-            &.black {
-                background-color: black;
-            }
+        &.game-over::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            background-color: #cbcbcb8f;
         }
 
-        .empty {
-            width: 100%;
-            height: 100%;
+        td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            width: 30px;
+            height: 30px;
+            min-width: 30px;
+            box-sizing: border-box;
 
-            &:hover {
-                cursor: pointer;
-                background-color: #e3e3e3;
+            .circle {
+                width: 100%;
+                height: 100%;
+                border-radius: 50%;
+                box-sizing: border-box;
+                border: 4px solid #aaaaaa;
+            }
+
+            .empty {
+                width: 100%;
+                height: 100%;
+
+                &:hover {
+                    cursor: pointer;
+                    background-color: #e3e3e3;
+                }
             }
         }
     }
