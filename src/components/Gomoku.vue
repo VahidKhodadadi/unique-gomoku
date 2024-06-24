@@ -116,9 +116,7 @@ const restart = () => {
     // reset current turn to white
     currentTurn.value = 'white';
     // clear history
-    history.forEach(() => {
-        history.pop();
-    })
+    while(history.pop());
     // no winner
     winner.value = null;
 }
