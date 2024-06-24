@@ -83,11 +83,9 @@ const isWinner = (tempI: number, tempJ: number) => {
 
     return null;
 }
-
 const changeTurn = () => {
     currentTurn.value = currentTurn.value === 'black' ? 'white' : 'black';
 }
-
 const selectSquare = (i: number, j: number, val: Color | null) => {
     if (winner.value) return;
     squares[i][j] = val;
@@ -105,7 +103,6 @@ const selectSquare = (i: number, j: number, val: Color | null) => {
         }
     }
 }
-
 const restart = () => {
     // clear all squares
     squares.forEach((row, i) => {
