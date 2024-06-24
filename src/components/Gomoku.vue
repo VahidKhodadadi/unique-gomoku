@@ -129,124 +129,41 @@ const undo = () => {
 </script>   
 
 <template>
-    <div class="buttons">
-        <button class="back" :disabled="history.length === 0" @click="undo">
+    <div class="w-full flex items-center justify-start px-3">
+        <button
+            class="py-1 px-3 box-border border-2 border-gray-500 rounded-md bg-gray-100 hover:[&:not([disabled])]bg-gray-200 active:scale-95 transition-all"
+            :disabled="history.length === 0" @click="undo">
             Back
         </button>
-        <button class="new-game" title="New game" @click="restart">
+        <button
+            class="ms-4 py-1 px-3 box-border border-2 border-gray-500 rounded-md bg-gray-100 hover:bg-gray-200 active:scale-95 transition-all"
+            title="New game" @click="restart">
             New game
         </button>
     </div>
 
-    <p v-if="Boolean(winner)" class="winner-title" :class="[Boolean(winner) ? winner : '']">
+    <p v-if="Boolean(winner)" class="text-base text-black text-center my-4">
         {{ winner }} won!
     </p>
-
-    <p v-else class="current-turn">
+    <p v-else class="w-full text-center my-4">
         Turn: {{ currentTurn }}
     </p>
 
-    <main class="container">
-        <table :class="Boolean(winner) ? 'game-over' : ''">
+    <main class="min-w-full overflow-auto bg-amber-800 p-4">
+
+        <table class="relative border-black border-collapse table-fixed bg-amber-600"
+            :class="Boolean(winner) ? 'after:content-none after:absolute after:inset-0 after:z-10 after:bg-gray-300' : ''">
             <tbody>
                 <tr v-for="(row, i) in squares">
-                    <td v-for="(square, j) in row">
-                        <div v-if="Boolean(square)" class="circle" :style="{ backgroundColor: square || 'transparent' }">
+                    <td v-for="(square, j) in row" class="border-black border-2 border-collapse w-8 h-8 min-w-8 box-border">
+                        <div v-if="Boolean(square)" class="w-full h-full rounded-full border-gray-400 border-2"
+                            :style="{ backgroundColor: square || 'transparent' }">
                         </div>
-                        <div @click="() => selectSquare(i, j, currentTurn)" v-else class="empty"></div>
+                        <div @click="() => selectSquare(i, j, currentTurn)" v-else
+                            class="w-full h-full hover:cursor-pointer hover:bg-gray-400"></div>
                     </td>
                 </tr>
             </tbody>
         </table>
     </main>
 </template>
-
-<style scoped lang="scss">
-.buttons {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 0 24px;
-
-    button {
-        padding: 8px 12px;
-        transition: transform 0.2s ease;
-        box-sizing: border-box;
-
-        &:active {
-            transform: scale(0.97);
-        }
-
-        &.new-game {
-            margin-inline-start: 24px;
-        }
-    }
-}
-
-.current-turn {
-    width: 100%;
-    text-align: center;
-}
-
-.winner-title {
-    font-size: 16px;
-    text-align: center;
-    color: black;
-
-    &.white {
-        color: white;
-        text-shadow: 1px 1px 1px black;
-    }
-}
-
-.container {
-    max-width: 100vw;
-    overflow: auto;
-    background-color: rgba(165, 91, 1, 0.77);
-    padding: 12px;
-
-    table {
-        position: relative;
-        border: 1px solid black;
-        border-collapse: collapse;
-        table-layout: fixed;
-        background-color: rgb(255 150 19 / 77%);
-
-        &.game-over::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            z-index: 2;
-            background-color: #cbcbcb8f;
-        }
-
-        td {
-            border: 1px solid black;
-            border-collapse: collapse;
-            width: 30px;
-            height: 30px;
-            min-width: 30px;
-            box-sizing: border-box;
-
-            .circle {
-                width: 100%;
-                height: 100%;
-                border-radius: 50%;
-                box-sizing: border-box;
-                border: 4px solid #aaaaaa;
-            }
-
-            .empty {
-                width: 100%;
-                height: 100%;
-
-                &:hover {
-                    cursor: pointer;
-                    background-color: #e3e3e3;
-                }
-            }
-        }
-    }
-}
-</style>
