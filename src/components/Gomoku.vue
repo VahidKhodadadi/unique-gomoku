@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 
+const afterPseudo = 'after:content-[""] after:absolute after:inset-0 after:z-10 after:bg-gray-300 after:bg-opacity-80';
+
 type Color = 'black' | 'white';
 
 const cols = 15;
@@ -131,12 +133,12 @@ const undo = () => {
 <template>
     <div class="w-full flex items-center justify-start px-3">
         <button
-            class="py-1 px-3 box-border border-2 border-gray-500 rounded-md bg-gray-100 hover:[&:not([disabled])]:bg-gray-200 active:[&:not([disabled])]:scale-95 transition-all"
-            :disabled="history.length === 0" @click="undo">
+            class="[&:disabled]:text-gray-400 [&:disabled]:border-gray-300 py-1 px-3 box-border border-2 border-gray-500 rounded-md bg-gray-100 hover:[&:not([disabled])]:bg-gray-200 active:[&:not([disabled])]:scale-95 transition-all"
+            :disabled="history.length === 0 || Boolean(winner)" @click="undo">
             Back
         </button>
         <button
-            class="ms-4 py-1 px-3 box-border border-2 border-gray-500 rounded-md bg-gray-100 hover:bg-gray-200 active:scale-95 transition-all"
+            class="ms-4 [&:disabled]:text-gray-400 [&:disabled]:border-gray-300 py-1 px-3 box-border border-2 border-gray-500 rounded-md bg-gray-100 hover:bg-gray-200 active:scale-95 transition-all"
             title="New game" @click="restart">
             New game
         </button>
@@ -152,7 +154,7 @@ const undo = () => {
     <main class="min-w-full overflow-auto bg-amber-800 p-4">
 
         <table class="relative border-black border-collapse table-fixed bg-amber-600"
-            :class="Boolean(winner) ? 'after:content-none after:absolute after:inset-0 after:z-10 after:bg-gray-300' : ''">
+            :class="Boolean(winner) ? afterPseudo : ''">
             <tbody>
                 <tr v-for="(row, i) in squares">
                     <td v-for="(square, j) in row" class="border-black border-2 border-collapse w-8 h-8 min-w-8 box-border">
