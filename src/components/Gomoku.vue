@@ -153,7 +153,7 @@ const undo = () => {
 
     <main class="min-w-full overflow-auto bg-amber-800 p-4">
 
-        <table class="relative border-black border-collapse table-fixed bg-amber-600"
+        <table class="relative border-black border-collapse table-fixed bg-amber-500"
             :class="Boolean(winner) ? afterPseudo : ''">
             <tbody>
                 <tr v-for="(row, i) in squares">
