@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
-
+import InlineSvg from 'vue-inline-svg';
 const afterPseudo = 'after:content-[""] after:absolute after:inset-0 after:z-10 after:bg-gray-300 after:bg-opacity-80';
 
 type Color = 'black' | 'white';
@@ -93,14 +93,14 @@ const isWinner = (tempI: number, tempJ: number) => {
 
     return null;
 }
-const changeTurn = () => {
+const toggleTurn = () => {
     currentTurn.value = currentTurn.value === 'black' ? 'white' : 'black';
 }
 const selectSquare = (i: number, j: number, val: Color | null) => {
     if (winner.value) return; // do nothing
     squares[i][j] = val; // fill with white or black stone
     if (val === null) {  // if it's undo
-        changeTurn();
+        toggleTurn();
         return;
     }
 
@@ -113,7 +113,7 @@ const selectSquare = (i: number, j: number, val: Color | null) => {
         winner.value = 'draw';
     }
     else {
-        changeTurn();
+        toggleTurn();
     }
     history.push({ i, j });
 }
@@ -142,14 +142,19 @@ const undo = () => {
 <template>
     <div class="w-full flex items-center justify-start px-3">
         <button
-            class="[&:disabled]:text-gray-400 [&:disabled]:border-gray-300 py-1 px-3 box-border border-2 border-gray-500 rounded-md bg-gray-100 hover:[&:not([disabled])]:bg-gray-200 active:[&:not([disabled])]:scale-95 transition-all"
+            class="flex items-center [&:disabled]:text-gray-400 [&:disabled]:border-gray-300 py-1 px-3 box-border border-2 border-gray-500 rounded-md bg-gray-100 hover:[&:not([disabled])]:bg-gray-200 active:[&:not([disabled])]:scale-95 transition-all"
             :disabled="history.length === 0 || Boolean(winner)" @click="undo">
-            Undo
+            <InlineSvg src="/icons/arrow-go-back-line.svg" width="20" height="20"
+                :fill="history.length === 0 || Boolean(winner) ? 'gray' : 'black'" aria-label="Undo move">
+            </InlineSvg>
+            <span class="ms-1">Undo</span>
         </button>
         <button
-            class="ms-4 [&:disabled]:text-gray-400 [&:disabled]:border-gray-300 py-1 px-3 box-border border-2 border-gray-500 rounded-md bg-gray-100 hover:bg-gray-200 active:scale-95 transition-all"
+            class="flex items-center ms-4 [&:disabled]:text-gray-400 [&:disabled]:border-gray-300 py-1 px-3 box-border border-2 border-gray-500 rounded-md bg-gray-100 hover:bg-gray-200 active:scale-95 transition-all"
             title="New game" @click="restart">
-            New game
+            <InlineSvg src="/icons/restart-line.svg" width="20" height="20" fill="black" aria-label="Restart game">
+            </InlineSvg>
+            <span class="ms-1">New game</span>
         </button>
     </div>
 
