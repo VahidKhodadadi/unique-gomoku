@@ -9,9 +9,19 @@ const cols = 15;
 const initialSquares = Array(cols).fill(null).map(() => Array(cols).fill(null).map(() => null));
 const history = reactive<{ i: number, j: number }[]>([]);
 const squares = reactive<(Color | null)[][]>(initialSquares);
-const winner = ref<Color | null>(null);
+const winner = ref<Color | 'draw' | null>(null); // draw => no one wins
 const currentTurn = ref<Color>('white');
 
+const isDraw = () => {
+    for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < cols; j++) {
+            if (squares[i][j] === null) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
 const isWinner = (tempI: number, tempJ: number) => {
     let count = 0;
     // 4 directions to check
@@ -87,21 +97,25 @@ const changeTurn = () => {
     currentTurn.value = currentTurn.value === 'black' ? 'white' : 'black';
 }
 const selectSquare = (i: number, j: number, val: Color | null) => {
-    if (winner.value) return;
-    squares[i][j] = val;
-    if (val === null) {
+    if (winner.value) return; // do nothing
+    squares[i][j] = val; // fill with white or black stone
+    if (val === null) {  // if it's undo
         changeTurn();
+        return;
+    }
+
+    // it's not undo, it's black or white
+    const winnerColor = isWinner(i, j);
+    if (winnerColor) {
+        winner.value = winnerColor;
+    }
+    else if (isDraw()) { // no one wins
+        winner.value = 'draw';
     }
     else {
-        const winnerColor = isWinner(i, j);
-        if (winnerColor) {
-            winner.value = winnerColor;
-        }
-        else {
-            history.push({ i, j });
-            changeTurn();
-        }
+        changeTurn();
     }
+    history.push({ i, j });
 }
 const restart = () => {
     // clear all squares
@@ -113,7 +127,7 @@ const restart = () => {
     // reset current turn to white
     currentTurn.value = 'white';
     // clear history
-    while(history.pop());
+    while (history.pop());
     // no winner
     winner.value = null;
 }
@@ -130,7 +144,7 @@ const undo = () => {
         <button
             class="[&:disabled]:text-gray-400 [&:disabled]:border-gray-300 py-1 px-3 box-border border-2 border-gray-500 rounded-md bg-gray-100 hover:[&:not([disabled])]:bg-gray-200 active:[&:not([disabled])]:scale-95 transition-all"
             :disabled="history.length === 0 || Boolean(winner)" @click="undo">
-            Back
+            Undo
         </button>
         <button
             class="ms-4 [&:disabled]:text-gray-400 [&:disabled]:border-gray-300 py-1 px-3 box-border border-2 border-gray-500 rounded-md bg-gray-100 hover:bg-gray-200 active:scale-95 transition-all"
@@ -139,7 +153,10 @@ const undo = () => {
         </button>
     </div>
 
-    <p v-if="Boolean(winner)" class="text-base text-black text-center my-4">
+    <p v-if="winner == 'draw'" class="text-base text-black text-center my-4">
+        Draw!
+    </p>
+    <p v-else-if="winner === 'black' || winner === 'white'" class="text-base text-black text-center my-4">
         {{ winner }} won!
     </p>
     <p v-else class="w-full text-center my-4">
@@ -147,7 +164,6 @@ const undo = () => {
     </p>
 
     <main class="min-w-full overflow-auto bg-amber-800 p-4">
-
         <table class="relative border-black border-collapse table-fixed bg-amber-500"
             :class="Boolean(winner) ? afterPseudo : ''">
             <tbody>
@@ -156,7 +172,7 @@ const undo = () => {
                         <div v-if="Boolean(square)" class="w-full h-full rounded-full border-gray-400 border-2"
                             :style="{ backgroundColor: square || 'transparent' }">
                         </div>
-                        <div @click="() => selectSquare(i, j, currentTurn)" v-else
+                        <div v-else @click="() => selectSquare(i, j, currentTurn)"
                             class="w-full h-full hover:cursor-pointer hover:bg-gray-400"></div>
                     </td>
                 </tr>
