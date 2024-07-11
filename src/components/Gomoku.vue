@@ -142,7 +142,9 @@ const undo = () => {
 <template>
     <div class="w-full flex items-center justify-start px-3">
         <button
+            data-cy="undo-btn"
             class="flex items-center [&:disabled]:text-gray-400 [&:disabled]:border-gray-300 py-1 px-3 box-border border-2 border-gray-500 rounded-md bg-gray-100 hover:[&:not([disabled])]:bg-gray-200 active:[&:not([disabled])]:scale-95 transition-all"
+            title="Undo move"
             :disabled="history.length === 0 || Boolean(winner)" @click="undo">
             <InlineSvg src="/icons/arrow-go-back-line.svg" width="20" height="20"
                 :fill="history.length === 0 || Boolean(winner) ? 'gray' : 'black'" aria-label="Undo move">
@@ -150,6 +152,7 @@ const undo = () => {
             <span class="ms-1">Undo</span>
         </button>
         <button
+            data-cy="reset-btn"
             class="flex items-center ms-4 [&:disabled]:text-gray-400 [&:disabled]:border-gray-300 py-1 px-3 box-border border-2 border-gray-500 rounded-md bg-gray-100 hover:bg-gray-200 active:scale-95 transition-all"
             title="New game" @click="restart">
             <InlineSvg src="/icons/restart-line.svg" width="20" height="20" fill="black" aria-label="Restart game">
@@ -171,10 +174,10 @@ const undo = () => {
     <main class="min-w-full overflow-auto bg-amber-800 p-4">
         <table class="relative border-black border-collapse table-fixed bg-amber-500"
             :class="Boolean(winner) ? afterPseudo : ''">
-            <tbody>
+            <tbody data-cy="tbody">
                 <tr v-for="(row, i) in squares">
                     <td v-for="(square, j) in row" class="border-black border-2 border-collapse w-8 h-8 min-w-8 box-border">
-                        <div v-if="Boolean(square)" class="w-full h-full rounded-full border-gray-400 border-2"
+                        <div :data-cy="`circle-${i}-${j}`" v-if="Boolean(square)" class="w-full h-full rounded-full border-gray-400 border-2"
                             :style="{ backgroundColor: square || 'transparent' }">
                         </div>
                         <div v-else @click="() => selectSquare(i, j, currentTurn)"
