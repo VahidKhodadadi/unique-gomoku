@@ -12,6 +12,14 @@ const squares = reactive<(Color | null)[][]>(initialSquares);
 const winner = ref<Color | 'draw' | null>(null); // draw => no one wins
 const currentTurn = ref<Color>('white');
 
+const turnBadgeClass = (color: Color) => color === 'black'
+    ? 'bg-black text-white border-black'
+    : 'bg-white text-black border-black';
+const turnDotClass = (color: Color) => color === 'black'
+    ? 'bg-black border-white'
+    : 'bg-white border-black';
+const hasPlacedStones = () => squares.some((row) => row.some((square) => square !== null));
+
 const isDraw = () => {
     for (let i = 0; i < cols; i++) {
         for (let j = 0; j < cols; j++) {
@@ -118,6 +126,10 @@ const selectSquare = (i: number, j: number, val: Color | null) => {
     history.push({ i, j });
 }
 const restart = () => {
+    if (hasPlacedStones() && !window.confirm('Starting a new game will clear the current board. Continue?')) {
+        return;
+    }
+
     // clear all squares
     squares.forEach((row, i) => {
         row.forEach((_, j) => {
@@ -140,24 +152,23 @@ const undo = () => {
 </script>   
 
 <template>
-    <div class="w-full flex items-center justify-start px-3">
+    <div class="w-full flex items-center gap-3 px-3">
         <button
             data-cy="undo-btn"
-            class="flex items-center [&:disabled]:text-gray-400 [&:disabled]:border-gray-300 py-1 px-3 box-border border-2 border-gray-500 rounded-md bg-gray-100 hover:[&:not([disabled])]:bg-gray-200 active:[&:not([disabled])]:scale-95 transition-all"
+            class="flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-gradient-to-r from-rose-500 to-orange-400 px-3 py-2 text-white shadow-sm transition-all hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:from-slate-200 disabled:to-slate-200 disabled:text-slate-400"
             title="Undo move"
             :disabled="history.length === 0 || Boolean(winner)" @click="undo">
-            <InlineSvg src="/icons/arrow-go-back-line.svg" width="20" height="20"
-                :fill="history.length === 0 || Boolean(winner) ? 'gray' : 'black'" aria-label="Undo move">
+            <InlineSvg src="/icons/arrow-go-back-line.svg" width="20" height="20" fill="currentColor" aria-label="Undo move">
             </InlineSvg>
-            <span class="ms-1">Undo</span>
+            <span class="font-semibold">Undo</span>
         </button>
         <button
             data-cy="reset-btn"
-            class="flex items-center ms-4 [&:disabled]:text-gray-400 [&:disabled]:border-gray-300 py-1 px-3 box-border border-2 border-gray-500 rounded-md bg-gray-100 hover:bg-gray-200 active:scale-95 transition-all"
+            class="flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-gradient-to-r from-sky-500 to-cyan-400 px-3 py-2 text-white shadow-sm transition-all hover:shadow-md active:scale-[0.98]"
             title="New game" @click="restart">
-            <InlineSvg src="/icons/restart-line.svg" width="20" height="20" fill="black" aria-label="Restart game">
+            <InlineSvg src="/icons/restart-line.svg" width="20" height="20" fill="currentColor" aria-label="Restart game">
             </InlineSvg>
-            <span class="ms-1">New game</span>
+            <span class="font-semibold">New game</span>
         </button>
     </div>
 
@@ -168,7 +179,11 @@ const undo = () => {
         {{ winner }} won!
     </p>
     <p v-else class="w-full text-center my-4">
-        Turn: {{ currentTurn }}
+        <span class="inline-flex items-center gap-2 rounded-full border px-3 py-1 font-semibold"
+            :class="turnBadgeClass(currentTurn)">
+            <span class="h-4 w-4 rounded-full border-2" :class="turnDotClass(currentTurn)"></span>
+            <span>Turn: {{ currentTurn }}</span>
+        </span>
     </p>
 
     <main class="min-w-full overflow-auto bg-amber-800 p-4">
